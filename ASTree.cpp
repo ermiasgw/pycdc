@@ -1502,6 +1502,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::SWAP_A:
             {
                 std::stack<PycRef<ASTNode>> tempStack;
+                std::cout << stack;
                 PycRef<ASTNode> topElement = stack.top();
                 stack.pop();
 
@@ -1520,6 +1521,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     tempStack.pop();
                 }
                 stack.push(elementAtIndex);
+                std::cout << stack;
              
             }
             break;
