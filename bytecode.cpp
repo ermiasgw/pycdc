@@ -69,6 +69,9 @@ const char* Pyc::OpcodeName(int opcode)
 
 int Pyc::ByteToOpcode(int maj, int min, int opcode)
 {
+    if (opcode ==  99) {
+        opcode = 100;
+    }
     switch (maj) {
     case 1:
         switch (min) {
