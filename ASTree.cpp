@@ -1497,6 +1497,24 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
             }
             break;
+
+        case Pyc::SWAP_A:
+            {
+                PycRef<ASTObject> t_ob = new ASTObject(code->getConst(operand));
+
+                if ((t_ob->object().type() == PycObject::TYPE_TUPLE ||
+                        t_ob->object().type() == PycObject::TYPE_SMALL_TUPLE) &&
+                        !t_ob->object().cast<PycTuple>()->values().size()) {
+                    ASTTuple::value_t values;
+                    stack.push(new ASTTuple(values));
+                } else if (t_ob->object().type() == PycObject::TYPE_NONE) {
+                    stack.push(NULL);
+                } else {
+                    stack.push(t_ob.cast<ASTNode>());
+                }
+            }
+            break;
+        
         case Pyc::LOAD_DEREF_A:
             stack.push(new ASTName(code->getCellVar(mod, operand)));
             break;
