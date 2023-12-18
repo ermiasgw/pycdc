@@ -64,7 +64,6 @@ jobs:
         
       - name: Compile for Linux        
         run: |
-          cd pycdc
           git clean -d -f -x
           sed -i '/target_link_libraries(pycdc pycxx)/c target_link_libraries(pycdc pycxx -static)' CMakeLists.txt
           cmake .
