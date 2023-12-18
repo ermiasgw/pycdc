@@ -14,7 +14,6 @@ jobs:
         uses: actions/checkout@v4.1.1
       - name: Compile
         run: >
-          cd pycdc
           
           echo "RELEASE_COMMIT=$(git log -1 --format=%h)" >> ${GITHUB_ENV}
 
