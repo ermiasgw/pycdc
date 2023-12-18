@@ -6,7 +6,6 @@
 #include "pyc_numeric.h"
 #include "bytecode.h"
 #include <stack>
-#include <iostream>
 
 // This must be a triple quote (''' or """), to handle interpolated string literals containing the opposite quote style.
 // E.g. f'''{"interpolated "123' literal"}'''    -> valid.
@@ -1502,12 +1501,15 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
         case Pyc::SWAP_A:
             {
+                if (operand == 0) {
+                    break;
+                }
                 std::stack<PycRef<ASTNode>> tempStack;
-                std::cout << stack;
+                
                 PycRef<ASTNode> topElement = stack.top();
                 stack.pop();
 
-                for (int i = 0; i < operand; ++i) {
+                for (int i = 0; i < operand - 1; i++) {
                     tempStack.push(stack.top());
                     stack.pop();
                 }
@@ -1522,7 +1524,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     tempStack.pop();
                 }
                 stack.push(elementAtIndex);
-                std::cout << stack;
              
             }
             break;
