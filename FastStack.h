@@ -44,6 +44,10 @@ public:
     {
         return m_ptr == -1;
     }
+    int size()
+    {
+        return m_stack.size();
+    }
 
 private:
     std::vector<PycRef<ASTNode>> m_stack;
