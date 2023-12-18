@@ -1506,7 +1506,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 try {
                     PycRef<ASTObject> t_ob = new ASTObject(code->getConst(operand));
                 }catch (const std::exception& e) {
-                    PycRef<ASTObject> t_ob = new ASTObject(code->getName(operand));
+                    PycRef<ASTName> t_ob = new ASTName(code->getName(operand));
                 }
                 if ((t_ob->object().type() == PycObject::TYPE_TUPLE ||
                         t_ob->object().type() == PycObject::TYPE_SMALL_TUPLE) &&
