@@ -6,6 +6,7 @@
 #include "pyc_numeric.h"
 #include "bytecode.h"
 #include <stack>
+#include <iostream>
 
 // This must be a triple quote (''' or """), to handle interpolated string literals containing the opposite quote style.
 // E.g. f'''{"interpolated "123' literal"}'''    -> valid.
