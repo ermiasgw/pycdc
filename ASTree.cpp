@@ -1505,6 +1505,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             {
                 try {
                     PycRef<ASTObject> t_ob = new ASTObject(code->getConst(operand));
+                }
                 catch () {
                     PycRef<ASTObject> t_ob = new ASTObject(code->getName(operand));
                 }
