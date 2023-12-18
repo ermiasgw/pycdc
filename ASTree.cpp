@@ -5,6 +5,7 @@
 #include "FastStack.h"
 #include "pyc_numeric.h"
 #include "bytecode.h"
+#include <stack>
 
 // This must be a triple quote (''' or """), to handle interpolated string literals containing the opposite quote style.
 // E.g. f'''{"interpolated "123' literal"}'''    -> valid.
@@ -1500,18 +1501,23 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
         case Pyc::SWAP_A:
             {
-                PycRef<ASTObject> t_ob = new ASTObject(code->getConst(operand));
+                std::stack<FastStack> tempStack;
+                FastStack topElement = stack.top();
+                stack.pop();
 
-                if ((t_ob->object().type() == PycObject::TYPE_TUPLE ||
-                        t_ob->object().type() == PycObject::TYPE_SMALL_TUPLE) &&
-                        !t_ob->object().cast<PycTuple>()->values().size()) {
-                    ASTTuple::value_t values;
-                    stack.push(new ASTTuple(values));
-                } else if (t_ob->object().type() == PycObject::TYPE_NONE) {
-                    stack.push(NULL);
-                } else {
-                    stack.push(t_ob.cast<ASTNode>());
+                for (int i = 0; i < operand; ++i) {
+                    tempStack.push(stack.top());
+                    stack.pop();
                 }
+
+                std::swap(topElement, stack.top());
+
+                while (!tempStack.empty()) {
+                    stack.push(tempStack.top());
+                    tempStack.pop();
+                }
+
+                            
             }
             break;
         
