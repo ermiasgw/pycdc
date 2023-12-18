@@ -1504,7 +1504,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::SWAP_A:
             {
                 if (operand == 0) {
-                    std::cerr << "Invalid index for swap."
+                    std::cout << "Invalid index for swap.";
                     break;
                 }
                 std::stack<PycRef<ASTNode>> tempStack;
@@ -1512,22 +1512,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> topElement = stack.top();
                 stack.pop();
 
-                for (int i = 0; i < operand - 1; i++) {
-                    tempStack.push(stack.top());
-                    stack.pop();
-                }
-
-                PycRef<ASTNode> elementAtIndex = stack.top();
-                stack.pop();
-                stack.push(topElement);
+                
                 
 
-                while (!tempStack.empty()) {
-                    stack.push(tempStack.top());
-                    tempStack.pop();
-                }
-                stack.push(elementAtIndex);
-             
+                
             }
             break;
         
