@@ -1513,14 +1513,14 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> elementAtIndex = stack.top();
                 stack.pop();
                 stack.push(topElement);
-                stack.push(elementAtIndex);
+                
 
                 while (!tempStack.empty()) {
                     stack.push(tempStack.top());
                     tempStack.pop();
                 }
-
-                            
+                stack.push(elementAtIndex);
+             
             }
             break;
         
