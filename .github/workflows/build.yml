@@ -34,13 +34,13 @@ jobs:
           echo "RELEASE_DATE=$(date -u +%d-%b-%Y)" >> ${GITHUB_ENV}
           echo "RELEASE_TIME=$(date -u +%H:%M)" >> ${GITHUB_ENV}
 
-#       - name: Upload artifact
-#         uses: actions/upload-artifact@v3
-#         with:
-#           name: pycdc
-#           path: |
-#             pycdc/pycdc.exe
-#             pycdc/pycdas.exe
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: pycdc
+          path: |
+            pycdc/pycdc.exe
+            pycdc/pycdas.exe
             
       - name: Create release Windows
         uses: ncipollo/release-action@v1
@@ -48,7 +48,7 @@ jobs:
           name: Decompyle++ ${{ env.RELEASE_DATE }}
           tag: build-${{ env.RELEASE_DATE }}-${{ env.RELEASE_COMMIT }}
           body: Compiled on ${{ env.RELEASE_DATE }} at ${{ env.RELEASE_TIME }} GMT, pycdc commit ${{ env.RELEASE_COMMIT }}
-          artifacts: "pycdc.exe,pycdas.exe"
+          artifacts: "pycdc/pycdc.exe,pycdas/pycdas.exe"
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
           draft: true
@@ -77,7 +77,7 @@ jobs:
           name: Decompyle++ ${{ env.RELEASE_DATE }}
           tag: build-${{ env.RELEASE_DATE }}-${{ env.RELEASE_COMMIT }}
           body: Compiled on ${{ env.RELEASE_DATE }} at ${{ env.RELEASE_TIME }} GMT, pycdc commit ${{ env.RELEASE_COMMIT }}
-          artifacts: "pycdc,pycdas"
+          artifacts: "pycdc/pycdc,pycdas/pycdas"
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
           draft: true
