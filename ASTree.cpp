@@ -1505,19 +1505,20 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             {
                 try {
                     PycRef<ASTObject> t_ob = new ASTObject(code->getConst(operand));
-                }catch (const std::exception& e) {
-                    PycRef<ASTName> t_ob = new ASTName(code->getName(operand));
-                }
-                if ((t_ob->object().type() == PycObject::TYPE_TUPLE ||
+                    if ((t_ob->object().type() == PycObject::TYPE_TUPLE ||
                         t_ob->object().type() == PycObject::TYPE_SMALL_TUPLE) &&
                         !t_ob->object().cast<PycTuple>()->values().size()) {
-                    ASTTuple::value_t values;
-                    stack.push(new ASTTuple(values));
-                } else if (t_ob->object().type() == PycObject::TYPE_NONE) {
-                    stack.push(NULL);
-                } else {
-                    stack.push(t_ob.cast<ASTNode>());
+                        ASTTuple::value_t values;
+                        stack.push(new ASTTuple(values));
+                    } else if (t_ob->object().type() == PycObject::TYPE_NONE) {
+                        stack.push(NULL);
+                    } else {
+                        stack.push(t_ob.cast<ASTNode>());
+                    }
+                }catch (const std::exception& e) {
+                    stack.push(new ASTName(code->getName(operand)));
                 }
+                
             }
             break;
         
