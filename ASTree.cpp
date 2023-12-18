@@ -1510,7 +1510,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     stack.pop();
                 }
 
-                std::swap(topElement, stack.top());
+                PycRef<ASTNode> elementAtIndex = stack.top();
+                stack.pop();
+                stack.push(topElement);
+                stack.push(elementAtIndex);
 
                 while (!tempStack.empty()) {
                     stack.push(tempStack.top());
