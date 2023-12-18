@@ -43,15 +43,15 @@ jobs:
             pycdas.exe
             
       - name: Create release Windows
-        uses: ncipollo/release-action@v1
+        uses: softprops/action-gh-release@v0.1.15
         with:
           name: Decompyle++ ${{ env.RELEASE_DATE }}
-          tag: build-${{ env.RELEASE_DATE }}-${{ env.RELEASE_COMMIT }}
+          tag_name: build-${{ env.RELEASE_DATE }}-${{ env.RELEASE_COMMIT }}
           body: Compiled on ${{ env.RELEASE_DATE }} at ${{ env.RELEASE_TIME }} GMT, pycdc commit ${{ env.RELEASE_COMMIT }}
-          artifacts: "pycdc.exe,pycdas.exe"
-          token: ${{ secrets.GITHUB_TOKEN }}
-          allowUpdates: true
-          draft: true
+          files: |
+            pycdc.exe
+            pycdas.exe
+          
 
 
       - name: Setup latest Alpine Linux
