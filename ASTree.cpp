@@ -1503,28 +1503,18 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
         case Pyc::SWAP_A:
             {
-                
-                std::stack<PycRef<ASTNode>> tempStack;
-                
-                PycRef<ASTNode> topElement = stack.top();
-                stack.pop();
+                PycRef<ASTObject> t_ob = new ASTObject(code->getConst(operand));
 
-                while (stack.size() > operand + 1) {
-                    tempStack.push(stack.top());
-                    stack.pop();
+                if ((t_ob->object().type() == PycObject::TYPE_TUPLE ||
+                        t_ob->object().type() == PycObject::TYPE_SMALL_TUPLE) &&
+                        !t_ob->object().cast<PycTuple>()->values().size()) {
+                    ASTTuple::value_t values;
+                    stack.push(new ASTTuple(values));
+                } else if (t_ob->object().type() == PycObject::TYPE_NONE) {
+                    stack.push(NULL);
+                } else {
+                    stack.push(t_ob.cast<ASTNode>());
                 }
-
-                PycRef<ASTNode> elementAtIndex = stack.top();
-                stack.pop();
-                stack.push(topElement);
-                
-
-                while (!tempStack.empty()) {
-                    stack.push(tempStack.top());
-                    tempStack.pop();
-                }
-                stack.push(elementAtIndex);
-             
             }
             break;
         
