@@ -1503,8 +1503,11 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
         case Pyc::SWAP_A:
             {
-                PycRef<ASTObject> t_ob = new ASTObject(code->getConst(operand));
-
+                try {
+                    PycRef<ASTObject> t_ob = new ASTObject(code->getConst(operand));
+                catch () {
+                    PycRef<ASTObject> t_ob = new ASTObject(code->getName(operand));
+                }
                 if ((t_ob->object().type() == PycObject::TYPE_TUPLE ||
                         t_ob->object().type() == PycObject::TYPE_SMALL_TUPLE) &&
                         !t_ob->object().cast<PycTuple>()->values().size()) {
