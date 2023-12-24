@@ -2517,7 +2517,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
             /* We just entirely ignore this / no-op */
             break;
-        case Pyc::COPY:
+        case Pyc::COPY_A:
         case Pyc::CACHE:
             /* These "fake" opcodes are used as placeholders for optimizing
                certain opcodes in Python 3.11+.  Since we have no need for
