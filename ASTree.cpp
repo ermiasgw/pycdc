@@ -1829,6 +1829,22 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::RETURN_VALUE:
         case Pyc::INSTRUMENTED_RETURN_VALUE_A:
+            {
+                if (curblock->blktype() == ASTBlock::BLK_CONTAINER) {
+                    curblock.cast<ASTContainerBlock>()->setExcept(pos+operand);
+                } else {
+                    PycRef<ASTBlock> next = new ASTContainerBlock(0, pos+operand);
+                    blocks.push(next.cast<ASTBlock>());
+                }
+
+                /* Store the current stack for the except/finally statement(s) */
+                stack_hist.push(stack);
+                PycRef<ASTBlock> tryblock = new ASTBlock(ASTBlock::BLK_TRY, pos+operand, true);
+                blocks.push(tryblock.cast<ASTBlock>());
+                curblock = blocks.top();
+
+                need_try = false;
+            }
             break;
         case Pyc::RETURN_CONST_A:
         case Pyc::INSTRUMENTED_RETURN_CONST_A:
@@ -1896,7 +1912,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 curblock = blocks.top();
             }
             break;
-        case Pyc::BEFORE_WITH_A:
+        case Pyc::BEFORE_WITH:
             {
                 PycRef<ASTBlock> withblock = new ASTWithBlock(pos+operand);
                 blocks.push(withblock);
@@ -1904,6 +1920,29 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::WITH_CLEANUP:
+            {
+                // Stack top should be a None. Ignore it.
+                PycRef<ASTNode> none = stack.top();
+                stack.pop();
+
+                if (none != NULL) {
+                    fprintf(stderr, "Something TERRIBLE happened!\n");
+                    break;
+                }
+
+                if (curblock->blktype() == ASTBlock::BLK_WITH
+                        && curblock->end() == curpos) {
+                    PycRef<ASTBlock> with = curblock;
+                    blocks.pop();
+                    curblock = blocks.top();
+                    curblock->append(with.cast<ASTNode>());
+                }
+                else {
+                    fprintf(stderr, "Something TERRIBLE happened! No matching with block found for WITH_CLEANUP at %d\n", curpos);
+                }
+            }
+            break;
+        case Pyc::WITH_EXCEPT_START:
             {
                 // Stack top should be a None. Ignore it.
                 PycRef<ASTNode> none = stack.top();
@@ -2461,7 +2500,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             /* We just entirely ignore this / no-op */
             break;
         case Pyc::RERAISE:
-        case Pyc::PUSH_EXC_INFO_A:
+        case Pyc::PUSH_EXC_INFO:
 
             /* We just entirely ignore this / no-op */
             break;
