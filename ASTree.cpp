@@ -1613,6 +1613,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     bc_next(source, mod, opcode, operand, pos);
                 }
             }
+            break;
         case Pyc::POP_BLOCK:
             {
                 if (curblock->blktype() == ASTBlock::BLK_CONTAINER ||
