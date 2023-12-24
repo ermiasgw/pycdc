@@ -396,15 +396,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::BUILD_TUPLE_A:
-            {
-                ASTTuple::value_t values;
-                values.resize(operand);
-                for (int i=0; i<operand; i++) {
-                    values[operand-i-1] = stack.top();
-                    stack.pop();
-                }
-                stack.push(new ASTTuple(values));
-            }
+            stack.push(new ASTName(code->getName(operand)));
             break;
         case Pyc::KW_NAMES_A:
             {
@@ -1504,26 +1496,18 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::SWAP_A:
             {
                 
-                std::stack<PycRef<ASTNode>> tempStack;
-                
-                PycRef<ASTNode> topElement = stack.top();
-                stack.pop();
+                PycRef<ASTObject> t_ob = new ASTObject(code->getConst(operand));
 
-                while (stack.size() > operand + 1) {
-                    tempStack.push(stack.top());
-                    stack.pop();
+                if ((t_ob->object().type() == PycObject::TYPE_TUPLE ||
+                        t_ob->object().type() == PycObject::TYPE_SMALL_TUPLE) &&
+                        !t_ob->object().cast<PycTuple>()->values().size()) {
+                    ASTTuple::value_t values;
+                    stack.push(new ASTTuple(values));
+                } else if (t_ob->object().type() == PycObject::TYPE_NONE) {
+                    stack.push(NULL);
+                } else {
+                    stack.push(t_ob.cast<ASTNode>());
                 }
-
-                PycRef<ASTNode> elementAtIndex = stack.top();
-                stack.pop();
-                stack.push(topElement);
-                
-
-                while (!tempStack.empty()) {
-                    stack.push(tempStack.top());
-                    tempStack.pop();
-                }
-                stack.push(elementAtIndex);
              
             }
             break;
@@ -1570,7 +1554,15 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::LOAD_NAME_A:
-            stack.push(new ASTName(code->getName(operand)));
+            {
+                ASTTuple::value_t values;
+                values.resize(operand);
+                for (int i=0; i<operand; i++) {
+                    values[operand-i-1] = stack.top();
+                    stack.pop();
+                }
+                stack.push(new ASTTuple(values));
+            }
             break;
         case Pyc::MAKE_CLOSURE_A:
         case Pyc::MAKE_FUNCTION_A:
@@ -1601,7 +1593,26 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::NOP:
-            break;
+            {
+                PycRef<ASTNode> value = stack.top();
+                stack.pop();
+                curblock->append(new ASTReturn(value));
+
+                if ((curblock->blktype() == ASTBlock::BLK_IF
+                        || curblock->blktype() == ASTBlock::BLK_ELSE)
+                        && stack_hist.size()
+                        && (mod->verCompare(2, 6) >= 0)) {
+                    stack = stack_hist.top();
+                    stack_hist.pop();
+
+                    PycRef<ASTBlock> prev = curblock;
+                    blocks.pop();
+                    curblock = blocks.top();
+                    curblock->append(prev.cast<ASTNode>());
+
+                    bc_next(source, mod, opcode, operand, pos);
+                }
+            }
         case Pyc::POP_BLOCK:
             {
                 if (curblock->blktype() == ASTBlock::BLK_CONTAINER ||
@@ -1818,26 +1829,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::RETURN_VALUE:
         case Pyc::INSTRUMENTED_RETURN_VALUE_A:
-            {
-                PycRef<ASTNode> value = stack.top();
-                stack.pop();
-                curblock->append(new ASTReturn(value));
-
-                if ((curblock->blktype() == ASTBlock::BLK_IF
-                        || curblock->blktype() == ASTBlock::BLK_ELSE)
-                        && stack_hist.size()
-                        && (mod->verCompare(2, 6) >= 0)) {
-                    stack = stack_hist.top();
-                    stack_hist.pop();
-
-                    PycRef<ASTBlock> prev = curblock;
-                    blocks.pop();
-                    curblock = blocks.top();
-                    curblock->append(prev.cast<ASTNode>());
-
-                    bc_next(source, mod, opcode, operand, pos);
-                }
-            }
             break;
         case Pyc::RETURN_CONST_A:
         case Pyc::INSTRUMENTED_RETURN_CONST_A:
@@ -1899,6 +1890,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             // Ignore
             break;
         case Pyc::SETUP_WITH_A:
+            {
+                PycRef<ASTBlock> withblock = new ASTWithBlock(pos+operand);
+                blocks.push(withblock);
+                curblock = blocks.top();
+            }
+            break;
+        case Pyc::BEFORE_WITH_A:
             {
                 PycRef<ASTBlock> withblock = new ASTWithBlock(pos+operand);
                 blocks.push(withblock);
@@ -2462,6 +2460,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::INSTRUMENTED_RESUME_A:
             /* We just entirely ignore this / no-op */
             break;
+        case Pyc::RERAISE:
+        case Pyc::PUSH_EXC_INFO_A:
+
+            /* We just entirely ignore this / no-op */
+            break;
+        
         case Pyc::CACHE:
             /* These "fake" opcodes are used as placeholders for optimizing
                certain opcodes in Python 3.11+.  Since we have no need for
