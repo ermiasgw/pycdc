@@ -123,6 +123,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             curblock = blocks.top();
         } else if (else_pop
                 && opcode != Pyc::JUMP_FORWARD_A
+                && opcode != Pyc::JUMP_BACKWARD_A
                 && opcode != Pyc::JUMP_IF_FALSE_A
                 && opcode != Pyc::JUMP_IF_FALSE_OR_POP_A
                 && opcode != Pyc::POP_JUMP_IF_FALSE_A
@@ -131,8 +132,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 && opcode != Pyc::JUMP_IF_TRUE_OR_POP_A
                 && opcode != Pyc::POP_JUMP_IF_TRUE_A
                 && opcode != Pyc::POP_JUMP_FORWARD_IF_TRUE_A
-                && opcode != Pyc::POP_JUMP_FORWARD_IF_NOT_NONE
-                && opcode != Pyc::POP_JUMP_FORWARD_IF_NONE
+                && opcode != Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A
+                && opcode != Pyc::POP_JUMP_FORWARD_IF_NONE_A
+
                 && opcode != Pyc::POP_BLOCK) {
             else_pop = false;
 
@@ -1041,8 +1043,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::POP_JUMP_IF_TRUE_A:
         case Pyc::POP_JUMP_FORWARD_IF_FALSE_A:
         case Pyc::POP_JUMP_FORWARD_IF_TRUE_A:
-        case Pyc::POP_JUMP_FORWARD_IF_NOT_NONE:
-        case Pyc::POP_JUMP_FORWARD_IF_NONE:
+        case Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A:
+        case Pyc::POP_JUMP_FORWARD_IF_NONE_A:
         case Pyc::INSTRUMENTED_POP_JUMP_IF_FALSE_A:
         case Pyc::INSTRUMENTED_POP_JUMP_IF_TRUE_A:
             {
@@ -1054,8 +1056,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         || opcode == Pyc::POP_JUMP_IF_TRUE_A
                         || opcode == Pyc::POP_JUMP_FORWARD_IF_FALSE_A
                         || opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A
-                        || opcode == Pyc::POP_JUMP_FORWARD_IF_NOT_NONE
-                        || opcode == Pyc::POP_JUMP_FORWARD_IF_NONE
+                        || opcode == Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A
+                        || opcode == Pyc::POP_JUMP_FORWARD_IF_NONE_A
                         || opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_FALSE_A
                         || opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_TRUE_A) {
                     /* Pop condition before the jump */
@@ -1078,7 +1080,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         || opcode == Pyc::JUMP_IF_TRUE_OR_POP_A
                         || opcode == Pyc::POP_JUMP_IF_TRUE_A
                         || opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A
-                        || opcode == Pyc::POP_JUMP_FORWARD_IF_NOT_NONE
+                        || opcode == Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A
                         || opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_TRUE_A;
 
                 int offs = operand;
@@ -1087,8 +1089,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 if (mod->verCompare(3, 12) >= 0
                         || opcode == Pyc::JUMP_IF_FALSE_A
                         || opcode == Pyc::JUMP_IF_TRUE_A
-                        || opcode == Pyc::POP_JUMP_FORWARD_IF_NOT_NONE
-                        || opcode == Pyc::POP_JUMP_FORWARD_IF_NONE
+                        || opcode == Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A
+                        || opcode == Pyc::POP_JUMP_FORWARD_IF_NONE_A
                         || opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A
                         || opcode == Pyc::POP_JUMP_FORWARD_IF_FALSE_A) {
                     /* Offset is relative in these cases */
@@ -1284,6 +1286,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::JUMP_FORWARD_A:
+        case Pyc::JUMP_BACKWARD_A:
         case Pyc::INSTRUMENTED_JUMP_FORWARD_A:
             {
                 int offs = operand;
@@ -2514,7 +2517,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
             /* We just entirely ignore this / no-op */
             break;
-        
+        case Pyc::COPY:
         case Pyc::CACHE:
             /* These "fake" opcodes are used as placeholders for optimizing
                certain opcodes in Python 3.11+.  Since we have no need for
